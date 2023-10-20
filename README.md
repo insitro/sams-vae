@@ -73,3 +73,6 @@ By default, training jobs are run locally.
 We provide sweep configurations, python scripts, and jupyter notebooks to replicate each analysis from the paper in the `paper/experiments/` directory.
 Additionally, we provide our precomputed metrics and checkpoints for download to allow exploration of the results without rerunning all experiments.
 Detailed instructions for replicating each analysis are available in the README files of the `paper/experiments/` directory.
+
+
+Note: we prestore some results in a public s3 instance. To access those precomputed results you will need to install the 'aws cli' client, see 'https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html' and have your own aws account you can log in with.
