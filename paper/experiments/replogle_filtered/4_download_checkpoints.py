@@ -73,23 +73,24 @@ def download_best_checkpoints():
         # select checkpoint with best test IWELBO from best hyperparameter setting
         # (selected with validation loss)
         best_run_path = curr.sort_values("test/IWELBO", ascending=False)["path"].iloc[0]
-        print(download_checkpoint(best_run_path))
+        print(download_checkpoints(best_run_path))
 
 
-def download_checkpoint(run_path):
+def download_checkpoints(run_path):
     api = wandb.Api()
     run = api.run(run_path)
-    best_checkpoint_paths = [
-        x
-        for x in run.files()
-        if os.path.split(x.name)[0] == "checkpoints" and "best" in x.name
+    checkpoint_wandb_files = [
+        x for x in run.files() if os.path.split(x.name)[0] == "checkpoints"
     ]
-    assert len(best_checkpoint_paths) == 1
-    wandb_file = best_checkpoint_paths[0]
+
     basedir = os.path.join("results/checkpoints/", run.name)
     os.makedirs(basedir, exist_ok=True)
-    checkpoint_path = wandb_file.download(root=basedir, replace=True).name
-    return checkpoint_path
+
+    checkpoint_paths = []
+    for wandb_file in checkpoint_wandb_files:
+        checkpoint_path = wandb_file.download(root=basedir, replace=True).name
+        checkpoint_paths.append(checkpoint_path)
+    return checkpoint_paths
 
 
 if __name__ == "__main__":

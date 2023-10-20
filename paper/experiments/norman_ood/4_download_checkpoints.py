@@ -28,30 +28,44 @@ def download_wandb_checkpoints():
     # download SAMS-VAE models trained on 75% of combinations for different splits of
     # perturbation combinations (see figures.ipynb for context)
     df = results.copy()
-    df = df[df["model"].isin(["sams_vae_correlated", "sams_vae_mean_field"])]
+    df = df[
+        df["model"].isin(
+            [
+                "sams_vae_correlated",
+                "sams_vae_mean_field",
+                "svae+",
+                "cpa_vae",
+                "conditional_vae",
+            ]
+        )
+    ]
     df = df[df["n_layers"] == 1]
     df = df[df["frac_combinations_train"] == 0.75]
-    df = df[df["encode_unique"] == False]  # noqa: E712
-    df = df[df["mean_field_encoder"] == False]  # noqa: E712
+    df = df[(df["encode_unique"] == False) | (df["model"] == "svae+")]  # noqa: E712
+    df = df[
+        (df["mean_field_encoder"] == False)  # noqa: E712
+        | pd.isna(df["mean_field_encoder"])
+    ]
 
     for path in df["path"]:
-        download_checkpoint(path)
+        download_checkpoints(path)
 
 
-def download_checkpoint(run_path):
+def download_checkpoints(run_path):
     api = wandb.Api()
     run = api.run(run_path)
-    best_checkpoint_paths = [
-        x
-        for x in run.files()
-        if os.path.split(x.name)[0] == "checkpoints" and "best" in x.name
+    checkpoint_wandb_files = [
+        x for x in run.files() if os.path.split(x.name)[0] == "checkpoints"
     ]
-    assert len(best_checkpoint_paths) == 1
-    wandb_file = best_checkpoint_paths[0]
+
     basedir = os.path.join("results/checkpoints/", run.name)
     os.makedirs(basedir, exist_ok=True)
-    checkpoint_path = wandb_file.download(root=basedir, replace=True).name
-    return checkpoint_path
+
+    checkpoint_paths = []
+    for wandb_file in checkpoint_wandb_files:
+        checkpoint_path = wandb_file.download(root=basedir, replace=True).name
+        checkpoint_paths.append(checkpoint_path)
+    return checkpoint_paths
 
 
 if __name__ == "__main__":
